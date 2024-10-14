@@ -13,8 +13,8 @@ export class Contacts extends Form<IOrderInfo> {
     this._phone = container.querySelector('[name="phone"]');
     this._payButton = container.querySelector('.button');
 
-    this._payButton.addEventListener('click', () => {
-      events.emit('order:submit');
+    this.container.addEventListener('submit', () => {
+      events.emit(`${this.container.name}:submit`);
     })
   }
 

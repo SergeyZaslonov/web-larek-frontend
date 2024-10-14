@@ -10,7 +10,7 @@ export class Success extends Component<IOrderResult> {
     this._success__description = container.querySelector('.order-success__description');
     this._success__close = container.querySelector('.order-success__close');
 
-    this._success__description.textContent = 'Списано '+total.toString()+' синапсов'
+    this.setText(this._success__description, 'Списано '+total.toString()+' синапсов');
 
     this._success__close.addEventListener('click', () => events.emit('order:finish'))
   }

@@ -14,6 +14,11 @@ export interface IBasket {
   total: number; 
 }
 
+export interface IBasketView {
+  items: HTMLElement[];
+  total: number;
+}
+
 export interface IOrderInfo {
   payment: PaymentMethod;
   email: string; 

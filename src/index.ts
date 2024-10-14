@@ -1,3 +1,5 @@
+import './scss/styles.scss';
+
 import { API_URL, CDN_URL } from './utils/constants';
 import { ApiLarek } from './components/apiLarek';
 import { EventEmitter } from './components/base/events';
@@ -5,10 +7,9 @@ import { LarekModel } from './components/modelLarek';
 import { Page } from './components/page';
 import { Modal } from './components/base/Modal';
 
-import './scss/styles.scss';
-import { Card } from './components/card';
+import { BasketCard, Card } from './components/card';
 import { cloneTemplate } from './utils/utils';
-import { IProduct, IOrderInfo, IOrderResult } from './types';
+import { IProduct, IOrderInfo, IOrderResult, IBasketView } from './types';
 import { Basket } from './components/basket';
 import { Order } from './components/order';
 import { Contacts } from './components/contacts';
@@ -17,6 +18,7 @@ import { Success } from './components/success';
 const cardCatalogTemplate = document.body.querySelector('#card-catalog') as HTMLTemplateElement;
 const cardPreviewTemplate = document.body.querySelector('#card-preview') as HTMLTemplateElement;
 const basketTemplate = document.body.querySelector('#basket') as HTMLTemplateElement;;
+const cardBasketTemplate = document.body.querySelector('#card-basket') as HTMLTemplateElement;
 const orderTemplate = document.body.querySelector('#order') as HTMLTemplateElement;;
 const contactsTemplate = document.body.querySelector('#contacts') as HTMLTemplateElement;;
 const successTemplate = document.body.querySelector('#success') as HTMLTemplateElement;;
@@ -82,13 +84,26 @@ events.on('basket:changed', () => {
   page.basketCount = model.basketCount;
 });
 
-events.on('basket:open', () => {
-  const basketForm = new Basket(cloneTemplate(basketTemplate),events);
-  modal.render({content: basketForm.render(model.basket)})
-})
-
-events.on('basket:refresh', (basketForm: Basket) => {
-  modal.render({content: basketForm.render(model.basket)})
+events.on('basket:open', (basketForm: Basket) => {
+  if (!basketForm)
+    basketForm = new Basket(cloneTemplate(basketTemplate),events);
+  const basket: IBasketView = {
+    items: model.catalog.filter((item) => {
+      return model.productInBasket(item.id)
+      })
+      .map((item, index) => {
+        const card = new BasketCard(cloneTemplate(cardBasketTemplate));
+        card.setIndex(index+1);
+        card.onClick = () =>
+          {
+            events.emit('product:remove', { id: item.id });
+            events.emit('basket:open', basketForm);
+          };
+        return card.render(item);
+      }),
+    total: model.basketTotal
+  }
+  modal.render({content: basketForm.render(basket)})
 });
 
 events.on('order:open', () => {
@@ -103,7 +118,7 @@ events.on('order:open', () => {
   });
 });
 
-events.on('order:next', () => {
+events.on('order:submit', () => {
   modalForm = new Contacts(cloneTemplate(contactsTemplate), events);
   modal.render({
     content: modalForm.render({
@@ -115,10 +130,10 @@ events.on('order:next', () => {
   });
 });
 
-events.on('order:submit', () => {
-  modal.close();
+events.on('contacts:submit', () => {
   api.putOrder(model.order)
   .then((result: IOrderResult) => {
+    modal.close();
     model.clearBasket();
     const success = new Success(cloneTemplate(successTemplate), result.total, events);
     modal.render(

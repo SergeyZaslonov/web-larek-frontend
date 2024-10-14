@@ -40,14 +40,13 @@ export class Card extends Component<IProduct>  {
     if (value !== null)
       this.setText(this._card__price, value.toString() + ' синапсов');
     else {
-      this._card__price.textContent = 'Бесценно';
+      this.setText(this._card__price, 'Бесценно');
       this.setDisabled(this._card__button, true);
     }
   };
 
   set buttonText(value:string) {
-    if (this._card__button)
-      this._card__button.textContent = value;
+    this.setText(this._card__button, value);
   }
 
   set onClick(value: EventListenerOrEventListenerObject) {
@@ -64,7 +63,11 @@ export class BasketCard extends Card  {
 
   constructor(container: HTMLElement)  {
     super(container);
-		this._card__index = container.querySelector('.basket__item-index');
-		this._card__button = container.querySelector('.basket__item-delete');
+    this._card__index = container.querySelector('.basket__item-index');
+    this._card__button = container.querySelector('.basket__item-delete');
+  }
+
+  setIndex(index: number) {
+    this.setText(this._card__index, index.toString())
   }
 }

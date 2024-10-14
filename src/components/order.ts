@@ -23,8 +23,8 @@ export class Order extends Form<IOrderInfo> {
       this.payment = 'online';
     })
 
-    this._orderButton.addEventListener('click', () => {
-      events.emit('order:next');
+    this.container.addEventListener('submit', () => {
+      events.emit(`${this.container.name}:submit`);
     })
   }
 
@@ -34,15 +34,9 @@ export class Order extends Form<IOrderInfo> {
 
   set payment(value: PaymentMethod) {
     if (value) {
-      if (value==='cash')
-        {
-          this._cashButton.classList.add('button_alt-active');
-          this._cardButton.classList.remove('button_alt-active');
-        }
-      else {
-        this._cardButton.classList.add('button_alt-active');
-        this._cashButton.classList.remove('button_alt-active');
-      }
+      const cashPayment = value==='cash';
+      this.toggleClass(this._cashButton,'button_alt-active',cashPayment)
+      this.toggleClass(this._cardButton,'button_alt-active',!cashPayment)
       const payment:{field: keyof IOrderInfo, value: string} = {field:'payment',value:value};
       this.events.emit('order.payment:change', payment)
     }
